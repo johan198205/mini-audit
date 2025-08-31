@@ -101,11 +101,19 @@ export default function RulesPage() {
   };
 
   if (loading) {
-    return <div className="p-6">Laddar regler...</div>;
+    return (
+      <div className="p-6">
+        <p>Laddar regler...</p>
+      </div>
+    );
   }
 
   if (!rules) {
-    return <div className="p-6">Fel vid laddning av regler</div>;
+    return (
+      <div className="p-6">
+        <p>Fel vid laddning av regler</p>
+      </div>
+    );
   }
 
   return (
@@ -116,7 +124,6 @@ export default function RulesPage() {
       </div>
 
       <div className="grid gap-6">
-        {/* Bounce Rate */}
         <Card>
           <CardHeader>
             <CardTitle>Bounce Rate</CardTitle>
@@ -132,7 +139,7 @@ export default function RulesPage() {
                   value={rules.bounceRate.high}
                   onChange={(e) => updateRule('bounceRate.high', Number(e.target.value))}
                 />
-                <p className="text-sm text-gray-500">> {rules.bounceRate.high}% = hög</p>
+                <p className="text-sm text-gray-500">{`> ${rules.bounceRate.high}% = hög`}</p>
               </div>
               <div>
                 <Label htmlFor="bounceRate.normal.min">Normal min (%)</Label>
@@ -151,7 +158,7 @@ export default function RulesPage() {
                   value={rules.bounceRate.normal.max}
                   onChange={(e) => updateRule('bounceRate.normal.max', Number(e.target.value))}
                 />
-                <p className="text-sm text-gray-500">{rules.bounceRate.normal.min}-{rules.bounceRate.normal.max}% = normalt</p>
+                <p className="text-sm text-gray-500">{`${rules.bounceRate.normal.min}-${rules.bounceRate.normal.max}% = normalt`}</p>
               </div>
             </div>
             <div>
@@ -162,12 +169,11 @@ export default function RulesPage() {
                 value={rules.bounceRate.suspicious}
                 onChange={(e) => updateRule('bounceRate.suspicious', Number(e.target.value))}
               />
-              <p className="text-sm text-gray-500">< {rules.bounceRate.suspicious}% = misstänkt låg</p>
+              <p className="text-sm text-gray-500">{`< ${rules.bounceRate.suspicious}% = misstänkt låg`}</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Conversion Rate */}
         <Card>
           <CardHeader>
             <CardTitle>Konverteringsgrad</CardTitle>
@@ -184,7 +190,7 @@ export default function RulesPage() {
                   value={rules.conversionRate.low}
                   onChange={(e) => updateRule('conversionRate.low', Number(e.target.value))}
                 />
-                <p className="text-sm text-gray-500">< {rules.conversionRate.low}% = låg</p>
+                <p className="text-sm text-gray-500">{`< ${rules.conversionRate.low}% = låg`}</p>
               </div>
               <div>
                 <Label htmlFor="conversionRate.good">Bra (%)</Label>
@@ -195,7 +201,7 @@ export default function RulesPage() {
                   value={rules.conversionRate.good}
                   onChange={(e) => updateRule('conversionRate.good', Number(e.target.value))}
                 />
-                <p className="text-sm text-gray-500">{rules.conversionRate.low}-{rules.conversionRate.good}% = bra</p>
+                <p className="text-sm text-gray-500">{`${rules.conversionRate.low}-${rules.conversionRate.good}% = bra`}</p>
               </div>
               <div>
                 <Label htmlFor="conversionRate.excellent">Excellent (%)</Label>
@@ -206,13 +212,12 @@ export default function RulesPage() {
                   value={rules.conversionRate.excellent}
                   onChange={(e) => updateRule('conversionRate.excellent', Number(e.target.value))}
                 />
-                <p className="text-sm text-gray-500">> {rules.conversionRate.excellent}% = excellent</p>
+                <p className="text-sm text-gray-500">{`> ${rules.conversionRate.excellent}% = excellent`}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Session Duration */}
         <Card>
           <CardHeader>
             <CardTitle>Session Duration</CardTitle>
@@ -228,7 +233,7 @@ export default function RulesPage() {
                   value={rules.sessionDuration.short}
                   onChange={(e) => updateRule('sessionDuration.short', Number(e.target.value))}
                 />
-                <p className="text-sm text-gray-500">< {rules.sessionDuration.short}s = kort</p>
+                <p className="text-sm text-gray-500">{`< ${rules.sessionDuration.short}s = kort`}</p>
               </div>
               <div>
                 <Label htmlFor="sessionDuration.good">Bra (s)</Label>
@@ -238,7 +243,7 @@ export default function RulesPage() {
                   value={rules.sessionDuration.good}
                   onChange={(e) => updateRule('sessionDuration.good', Number(e.target.value))}
                 />
-                <p className="text-sm text-gray-500">> {rules.sessionDuration.good}s = bra</p>
+                <p className="text-sm text-gray-500">{`> ${rules.sessionDuration.good}s = bra`}</p>
               </div>
               <div>
                 <Label htmlFor="sessionDuration.excellent">Excellent (s)</Label>
@@ -248,13 +253,12 @@ export default function RulesPage() {
                   value={rules.sessionDuration.excellent}
                   onChange={(e) => updateRule('sessionDuration.excellent', Number(e.target.value))}
                 />
-                <p className="text-sm text-gray-500">> {rules.sessionDuration.excellent}s = excellent</p>
+                <p className="text-sm text-gray-500">{`> ${rules.sessionDuration.excellent}s = excellent`}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Page Views */}
         <Card>
           <CardHeader>
             <CardTitle>Page Views per Session</CardTitle>
@@ -271,7 +275,7 @@ export default function RulesPage() {
                   value={rules.pageViews.low}
                   onChange={(e) => updateRule('pageViews.low', Number(e.target.value))}
                 />
-                <p className="text-sm text-gray-500">< {rules.pageViews.low} = låg</p>
+                <p className="text-sm text-gray-500">{`< ${rules.pageViews.low} = låg`}</p>
               </div>
               <div>
                 <Label htmlFor="pageViews.good">Bra</Label>
@@ -282,7 +286,7 @@ export default function RulesPage() {
                   value={rules.pageViews.good}
                   onChange={(e) => updateRule('pageViews.good', Number(e.target.value))}
                 />
-                <p className="text-sm text-gray-500">> {rules.pageViews.good} = bra</p>
+                <p className="text-sm text-gray-500">{`> ${rules.pageViews.good} = bra`}</p>
               </div>
               <div>
                 <Label htmlFor="pageViews.excellent">Excellent</Label>
@@ -293,13 +297,12 @@ export default function RulesPage() {
                   value={rules.pageViews.excellent}
                   onChange={(e) => updateRule('pageViews.excellent', Number(e.target.value))}
                 />
-                <p className="text-sm text-gray-500">> {rules.pageViews.excellent} = excellent</p>
+                <p className="text-sm text-gray-500">{`> ${rules.pageViews.excellent} = excellent`}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Traffic */}
         <Card>
           <CardHeader>
             <CardTitle>Trafik</CardTitle>
@@ -315,7 +318,7 @@ export default function RulesPage() {
                   value={rules.traffic.significant}
                   onChange={(e) => updateRule('traffic.significant', Number(e.target.value))}
                 />
-                <p className="text-sm text-gray-500">> {rules.traffic.significant} sessioner = signifikant</p>
+                <p className="text-sm text-gray-500">{`> ${rules.traffic.significant} sessioner = signifikant`}</p>
               </div>
               <div>
                 <Label htmlFor="traffic.high">Hög</Label>
@@ -325,7 +328,7 @@ export default function RulesPage() {
                   value={rules.traffic.high}
                   onChange={(e) => updateRule('traffic.high', Number(e.target.value))}
                 />
-                <p className="text-sm text-gray-500">> {rules.traffic.high} sessioner = hög</p>
+                <p className="text-sm text-gray-500">{`> ${rules.traffic.high} sessioner = hög`}</p>
               </div>
             </div>
           </CardContent>
