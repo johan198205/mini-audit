@@ -210,8 +210,8 @@ async function fetchGA4Data(propertyId: string, dateRange: any, analysisType?: s
 
 export async function POST(request: NextRequest) {
   try {
-    const body: AnalysisRequest & { analysisType?: string; useGa4Api?: boolean } = await request.json();
-    const { company, files, context, promptOverrides, analysisType, useGa4Api } = body;
+    const body: AnalysisRequest & { analysisType?: string; useGa4Api?: boolean; minFindings?: number } = await request.json();
+    const { company, files, context, promptOverrides, analysisType, useGa4Api, minFindings } = body;
 
     if (!company) {
       return NextResponse.json({ error: 'Company name is required' }, { status: 400 });
@@ -352,7 +352,8 @@ export async function POST(request: NextRequest) {
           company,
           businessGoal: context?.businessGoal,
           conversions: context?.conversions,
-        }
+        },
+        minFindings || 20
       );
     } catch (error) {
       console.error('Error creating user prompt:', error);
