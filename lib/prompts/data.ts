@@ -87,14 +87,43 @@ export function createDataUserPrompt(
   
   if (data.ga4) {
     if (data.ga4.type === 'api') {
-      dataDescription = `GA4 API Data (Direkt från Google Analytics):
+      const analysisType = data.ga4.analysisType || 'default';
+      
+      if (analysisType === 'session-analysis') {
+        dataDescription = `GA4 API Data - DJUP SESSION ANALYS (Direkt från Google Analytics):
 - Property ID: ${data.ga4.propertyId}
 - Datumintervall: ${data.ga4.dateRange.startDate} till ${data.ga4.dateRange.endDate}
-- Totalt antal datapunkter: ${data.ga4.data.totalRows}
-- Tillgängliga rapporter: ${Object.keys(data.ga4.data.reports).join(', ')}
+- Analys typ: Session-analys över längre period
+- Totalt antal datapunkter: ${data.ga4.totalRows}
+
+DETALJERAD SESSION DATA:
+${Object.entries(data.ga4.reports).map(([reportName, reportData]: [string, any]) => `
+${reportName.toUpperCase()}:
+- Antal rader: ${reportData.rows?.length || 0}
+- Dimensioner: ${reportData.dimensionHeaders?.map((h: any) => h.name).join(', ') || 'N/A'}
+- Mätvärden: ${reportData.metricHeaders?.map((h: any) => h.name).join(', ') || 'N/A'}
+- Första 10 raderna:
+${JSON.stringify(reportData.rows?.slice(0, 10) || [], null, 2)}
+`).join('\n')}
+
+ANALYSERA DENNA SESSION-DATA SPECIFIKT:
+- Jämför dagliga trender över senaste året för att hitta avvikelser
+- Analysera timmönster och veckodagsmönster för optimal timing
+- Undersök enhetsprestanda och browser-kompatibilitet
+- Identifiera säsongsmönster och trender
+- Hitta konverteringsmönster över tid
+- Analysera kanalprestanda över längre perioder
+- Identifiera datakvalitetsproblem eller saknade mätvärden
+- Hitta möjligheter för förbättring baserat på djupare dataanalys`;
+      } else {
+        dataDescription = `GA4 API Data (Direkt från Google Analytics):
+- Property ID: ${data.ga4.propertyId}
+- Datumintervall: ${data.ga4.dateRange.startDate} till ${data.ga4.dateRange.endDate}
+- Totalt antal datapunkter: ${data.ga4.totalRows}
+- Tillgängliga rapporter: ${Object.keys(data.ga4.reports).join(', ')}
 
 DETALJERAD DATA PER RAPPORT:
-${Object.entries(data.ga4.data.reports).map(([reportName, reportData]: [string, any]) => `
+${Object.entries(data.ga4.reports).map(([reportName, reportData]: [string, any]) => `
 ${reportName.toUpperCase()}:
 - Antal rader: ${reportData.rows?.length || 0}
 - Dimensioner: ${reportData.dimensionHeaders?.map((h: any) => h.name).join(', ') || 'N/A'}
@@ -110,6 +139,7 @@ ANALYSERA DENNA API-DATA SPECIFIKT:
 - Undersök demografiska trender och geografisk fördelning
 - Hitta möjligheter för förbättring baserat på faktisk data
 - Identifiera datakvalitetsproblem eller saknade mätvärden`;
+      }
     } else if (data.ga4.type === 'csv' || data.ga4.type === 'multi_csv') {
       const fileInfo = data.ga4.type === 'multi_csv' 
         ? `- Antal filer: ${data.ga4.fileCount}

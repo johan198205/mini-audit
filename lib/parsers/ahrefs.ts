@@ -30,7 +30,7 @@ async function parseAhrefsCSV(filepath: string): Promise<AhrefsRow> {
           reject(error);
         }
       },
-      error: (error) => {
+      error: (error: any) => {
         reject(error);
       }
     });

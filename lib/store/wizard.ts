@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { WizardState, CompanyInfo, UploadedFiles, ContextAnswers, AnalysisResult, AggregatedResult } from '@/lib/types';
+import { WizardState, CompanyInfo, UploadedFiles, ContextAnswers, AnalysisResult, AggregatedResult, AnalysisRequest } from '@/lib/types';
 
 interface WizardStore extends WizardState {
   setCurrentStep: (step: number) => void;

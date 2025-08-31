@@ -30,7 +30,7 @@ async function parseScreamingFrogCSV(filepath: string): Promise<ScreamingFrogRow
           reject(error);
         }
       },
-      error: (error) => {
+      error: (error: any) => {
         reject(error);
       }
     });

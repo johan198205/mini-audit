@@ -48,7 +48,7 @@ export default function UploadPage() {
 
   const handleContinue = async () => {
     // Upload files to server
-    const uploadedFilePaths: Record<string, string | string[]> = {};
+    const uploadedFilePaths: Record<string, string | string[] | boolean> = {};
     
     // Add GA4 API flag if enabled
     if (useGa4Api) {

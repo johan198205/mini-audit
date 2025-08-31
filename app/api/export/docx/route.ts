@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     const filename = `${result.company.replace(/[^a-zA-Z0-9]/g, '_')}-review.docx`;
 
-    return new NextResponse(buffer, {
+    return new NextResponse(buffer as any, {
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'Content-Disposition': `attachment; filename="${filename}"`,

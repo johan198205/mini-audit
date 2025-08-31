@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
       const filename = `${result.company.replace(/[^a-zA-Z0-9]/g, '_')}-review.pdf`;
 
-      return new NextResponse(pdf, {
+      return new NextResponse(pdf as any, {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename="${filename}"`,

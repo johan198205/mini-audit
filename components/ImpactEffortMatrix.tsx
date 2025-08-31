@@ -10,7 +10,7 @@ interface ImpactEffortMatrixProps {
 }
 
 export function ImpactEffortMatrix({ findings }: ImpactEffortMatrixProps) {
-  const matrix = Array.from({ length: 5 }, (_, i) => 
+  const matrix: Finding[][][] = Array.from({ length: 5 }, (_, i) => 
     Array.from({ length: 5 }, (_, j) => [])
   );
 

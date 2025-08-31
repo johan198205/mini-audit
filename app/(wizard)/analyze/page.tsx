@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, XCircle, Loader2, ArrowRight } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, ArrowRight, BarChart3 } from 'lucide-react';
 
 type AnalysisStatus = 'pending' | 'running' | 'completed' | 'error';
 
@@ -30,6 +30,7 @@ export default function AnalyzePage() {
 
   const [analysisStates, setAnalysisStates] = useState<Record<string, AnalysisState>>({});
   const [overallProgress, setOverallProgress] = useState(0);
+  const [sessionAnalysisRunning, setSessionAnalysisRunning] = useState(false);
 
   useEffect(() => {
     if (companyInfo?.sections) {
@@ -47,7 +48,7 @@ export default function AnalyzePage() {
     setOverallProgress(total > 0 ? (completed / total) * 100 : 0);
   }, [analysisStates]);
 
-  const runAnalysis = async () => {
+  const runAnalysis = async (analysisType?: string) => {
     if (!companyInfo?.sections) return;
 
     const analysisPromises = companyInfo.sections.map(async (section) => {
@@ -67,6 +68,7 @@ export default function AnalyzePage() {
             company: companyInfo.name,
             files: uploadedFiles,
             useGa4Api: uploadedFiles.useGa4Api,
+            analysisType: analysisType,
             context: {
               url: companyInfo.domain,
               businessGoal: contextAnswers.businessGoal,
@@ -103,6 +105,15 @@ export default function AnalyzePage() {
     });
 
     await Promise.all(analysisPromises);
+  };
+
+  const runSessionAnalysis = async () => {
+    setSessionAnalysisRunning(true);
+    try {
+      await runAnalysis('session-analysis');
+    } finally {
+      setSessionAnalysisRunning(false);
+    }
   };
 
   const handleContinue = () => {
@@ -167,6 +178,38 @@ export default function AnalyzePage() {
         </CardHeader>
         
         <CardContent className="space-y-6">
+          {/* Session Analysis Option */}
+          {uploadedFiles.useGa4Api && (
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <BarChart3 className="h-5 w-5 text-blue-600" />
+                <h3 className="font-semibold text-blue-800">Djup Session-analys</h3>
+              </div>
+              <p className="text-sm text-blue-700 mb-3">
+                Analysera session data över senaste året för att hitta avvikelser, trender och optimeringsmöjligheter.
+              </p>
+              <Button
+                onClick={runSessionAnalysis}
+                disabled={sessionAnalysisRunning}
+                variant="outline"
+                size="sm"
+                className="border-blue-300 text-blue-700 hover:bg-blue-100"
+              >
+                {sessionAnalysisRunning ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Kör djup analys...
+                  </>
+                ) : (
+                  <>
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Kör djup session-analys
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Total framsteg</span>
@@ -207,7 +250,7 @@ export default function AnalyzePage() {
 
           <div className="flex justify-center pt-6">
             {Object.values(analysisStates).every(state => state.status === 'pending') ? (
-              <Button onClick={runAnalysis} size="lg">
+              <Button onClick={() => runAnalysis()} size="lg">
                 Starta analys
               </Button>
             ) : allCompleted ? (
@@ -216,7 +259,7 @@ export default function AnalyzePage() {
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             ) : hasErrors ? (
-              <Button onClick={runAnalysis} variant="outline" size="lg">
+              <Button onClick={() => runAnalysis()} variant="outline" size="lg">
                 Försök igen
               </Button>
             ) : (
