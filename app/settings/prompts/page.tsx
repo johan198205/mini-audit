@@ -33,7 +33,7 @@ Exempel på bra fynd:
 
 VIKTIGT: Var mycket specifik och konkret. Undvik generiska råd.
 
-Skriv en executive summary på max 200 ord som:
+Generera 3-7 konkreta affärsförslag som:
 1. Sammanfattar de viktigaste fynden med SPECIFIKA exempel
 2. Prioriterar Quick Wins (hög impact, låg effort) med konkreta steg
 3. Identifierar strategiska projekt med specifika tidsramar

@@ -95,6 +95,7 @@ function generateReportDocument(result: AggregatedResult): Document {
         }),
       ],
       spacing: { after: 400 },
+      // TODO: Consider page breaks for very long executive summaries
     }),
 
     new Paragraph({

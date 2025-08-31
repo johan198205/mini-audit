@@ -109,7 +109,7 @@ För att få en mer detaljerad AI-genererad sammanfattning, konfigurera din Open
           </Button>
         </div>
         <p className="text-sm text-muted-foreground">
-          AI-genererad sammanfattning av analysen (max 200 ord)
+          AI-genererade affärsförslag baserat på analysen
         </p>
       </CardHeader>
       
@@ -120,21 +120,11 @@ För att få en mer detaljerad AI-genererad sammanfattning, konfigurera din Open
             setSummary(e.target.value);
             onSummaryChange(e.target.value);
           }}
-          placeholder={isGenerating ? "Genererar executive summary..." : "Executive summary kommer att genereras automatiskt..."}
-          rows={6}
+          placeholder={isGenerating ? "Genererar affärsförslag..." : "Affärsförslag kommer att genereras automatiskt..."}
+          rows={8}
           className="resize-none"
           disabled={isGenerating}
         />
-        <div className="flex justify-between items-center mt-2">
-          <span className="text-xs text-muted-foreground">
-            {summary.length} / 200 ord
-          </span>
-          {summary.length > 200 && (
-            <span className="text-xs text-red-500">
-              Överstiger rekommenderad längd
-            </span>
-          )}
-        </div>
       </CardContent>
     </Card>
   );

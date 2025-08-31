@@ -215,6 +215,7 @@ function generateReportHTML(result: AggregatedResult): string {
       <div class="section">
         <h2>Executive Summary</h2>
         <p>${result.executiveSummary}</p>
+        <!-- TODO: Consider pagination/line breaks for very long executive summaries -->
       </div>
 
       <div class="section">

@@ -16,7 +16,7 @@ export type AnalysisResult = {
 
 export type AggregatedResult = {
   company: string;
-  executiveSummary: string; // <= 200 words total
+  executiveSummary: string; // Business proposals with no word limit
   findings: Finding[];      // merged + sorted
 };
 
