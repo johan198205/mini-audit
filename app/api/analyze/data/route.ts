@@ -99,6 +99,80 @@ async function fetchGA4Data(propertyId: string, dateRange: any, analysisType?: s
             ],
             limit: '1000'
           }
+        }),
+
+        // Geographic performance
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'country' },
+              { name: 'city' }
+            ],
+            metrics: [
+              { name: 'sessions' },
+              { name: 'totalUsers' },
+              { name: 'bounceRate' },
+              { name: 'conversions' }
+            ],
+            limit: '1000'
+          }
+        }),
+
+        // User segmentation
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'sessionDefaultChannelGroup' },
+              { name: 'userType' }
+            ],
+            metrics: [
+              { name: 'sessions' },
+              { name: 'totalUsers' },
+              { name: 'newUsers' },
+              { name: 'bounceRate' },
+              { name: 'conversions' }
+            ],
+            limit: '1000'
+          }
+        }),
+
+        // Page performance
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'pagePath' },
+              { name: 'pageTitle' }
+            ],
+            metrics: [
+              { name: 'screenPageViews' },
+              { name: 'averageSessionDuration' },
+              { name: 'bounceRate' },
+              { name: 'conversions' }
+            ],
+            limit: '1000'
+          }
+        }),
+
+        // Events analysis
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'eventName' }
+            ],
+            metrics: [
+              { name: 'eventCount' },
+              { name: 'totalUsers' }
+            ],
+            limit: '1000'
+          }
         })
       ]);
     } else {
@@ -191,8 +265,11 @@ async function fetchGA4Data(propertyId: string, dateRange: any, analysisType?: s
       reports: analysisType === 'session-analysis' ? {
         dailyTrends: reports[0]?.data || { rows: [] },
         hourlyPatterns: reports[1]?.data || { rows: [] },
-        deviceAnalysis: reports[2]?.data || { rows: [] }
-      } : {
+        deviceAnalysis: reports[2]?.data || { rows: [] },
+        geographicPerformance: reports[3]?.data || { rows: [] },
+        userSegmentation: reports[4]?.data || { rows: [] },
+        pagePerformance: reports[5]?.data || { rows: [] },
+        events: reports[6]?.data || { rows: [] }} : {
         trafficAcquisition: reports[0]?.data || { rows: [] },
         pagePerformance: reports[1]?.data || { rows: [] },
         events: reports[2]?.data || { rows: [] },
