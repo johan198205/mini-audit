@@ -137,28 +137,117 @@ export async function runVisionPrompt(
 
 function safeJson(content: string): AnalysisResult {
   try {
-    const parsed = JSON.parse(content);
+    console.log('Attempting to parse JSON content...');
+    console.log('Content length:', content.length);
+    console.log('Content preview (first 1000 chars):', content.substring(0, 1000));
+    
+    // Try to fix incomplete JSON by finding the last complete finding
+    let fixedContent = content;
+    if (content.includes('"evidence": "') && !content.trim().endsWith('}')) {
+      console.log('Detected incomplete JSON, attempting to fix...');
+      
+      // Find the last complete finding by looking for complete objects
+      const lastCompleteBrace = content.lastIndexOf('}');
+      const lastCompleteBracket = content.lastIndexOf(']');
+      
+      if (lastCompleteBrace > lastCompleteBracket) {
+        // Find the position after the last complete finding
+        const beforeLastFinding = content.lastIndexOf('},', lastCompleteBrace);
+        if (beforeLastFinding > 0) {
+          fixedContent = content.substring(0, beforeLastFinding + 1) + ']}';
+          console.log('Fixed incomplete JSON by truncating at last complete finding');
+        }
+      }
+    }
+    
+    const parsed = JSON.parse(fixedContent);
+    console.log('JSON parsed successfully');
+    console.log('Parsed structure:', {
+      hasFindings: !!parsed.findings,
+      findingsType: typeof parsed.findings,
+      findingsLength: Array.isArray(parsed.findings) ? parsed.findings.length : 'not array',
+      hasGaps: !!parsed.gaps,
+      hasSummary: !!parsed.summary
+    });
     
     // Validate the structure
     if (!parsed.findings || !Array.isArray(parsed.findings)) {
+      console.error('Invalid findings structure:', parsed.findings);
       throw new Error('Invalid response structure: missing findings array');
     }
 
-    // Validate each finding
-    for (const finding of parsed.findings) {
-      if (!finding.title || !finding.recommendation || !finding.impact || !finding.effort || !finding.area) {
-        throw new Error('Invalid finding structure');
+    console.log('Validating and normalizing findings...');
+    // Validate and normalize each finding
+    const normalizedFindings = [];
+    for (let i = 0; i < parsed.findings.length; i++) {
+      const finding = parsed.findings[i];
+      console.log(`Finding ${i}:`, {
+        hasTitle: !!finding.title,
+        hasWhyItMatters: !!finding.why_it_matters,
+        hasWhyItMattersDot: !!finding['why_it.matters'],
+        hasRecommendation: !!finding.recommendation,
+        hasImpact: !!finding.impact,
+        hasEffort: !!finding.effort,
+        hasArea: !!finding.area,
+        impactValue: finding.impact,
+        effortValue: finding.effort
+      });
+      
+      // Normalize the finding structure
+      const normalizedFinding = {
+        title: finding.title,
+        why_it_matters: finding.why_it_matters || finding['why_it.matters'] || finding.whyItMatters || 'Ej angivet',
+        evidence: finding.evidence || '',
+        recommendation: finding.recommendation,
+        impact: finding.impact,
+        effort: finding.effort,
+        area: finding.area || 'Data'
+      };
+      
+      if (!normalizedFinding.title || !normalizedFinding.recommendation || !normalizedFinding.impact || !normalizedFinding.effort) {
+        console.error(`Invalid finding structure at index ${i}:`, finding);
+        throw new Error(`Invalid finding structure at index ${i}`);
       }
       
-      if (![1, 2, 3, 4, 5].includes(finding.impact) || ![1, 2, 3, 4, 5].includes(finding.effort)) {
-        throw new Error('Invalid impact or effort value');
+      if (![1, 2, 3, 4, 5].includes(normalizedFinding.impact) || ![1, 2, 3, 4, 5].includes(normalizedFinding.effort)) {
+        console.error(`Invalid impact/effort values at index ${i}:`, { impact: normalizedFinding.impact, effort: normalizedFinding.effort });
+        throw new Error(`Invalid impact or effort value at index ${i}`);
       }
+      
+      normalizedFindings.push(normalizedFinding);
     }
 
-    return parsed as AnalysisResult;
+    console.log('All findings validated and normalized successfully');
+    return {
+      findings: normalizedFindings,
+      gaps: parsed.gaps || [],
+      summary: parsed.summary || ''
+    };
   } catch (error) {
     console.error('Error parsing JSON response:', error);
-    console.error('Raw content:', content);
+    console.error('Raw content (first 2000 chars):', content.substring(0, 2000));
+    console.error('Raw content (last 1000 chars):', content.substring(Math.max(0, content.length - 1000)));
+    
+    // Try to extract findings from incomplete JSON
+    try {
+      console.log('Attempting to extract findings from incomplete JSON...');
+      const findingsMatch = content.match(/"findings":\s*\[(.*?)\]/s);
+      if (findingsMatch) {
+        const findingsContent = findingsMatch[1];
+        const findingMatches = findingsContent.match(/\{[^}]*"title"[^}]*\}/g);
+        if (findingMatches && findingMatches.length > 0) {
+          console.log(`Found ${findingMatches.length} potential findings in incomplete JSON`);
+          // Return partial results
+          return {
+            findings: [],
+            gaps: ['JSON response was incomplete but findings were detected'],
+            summary: `AI genererade ${findingMatches.length} fynd men svaret blev ofullständigt. Försök igen med färre fynd.`
+          };
+        }
+      }
+    } catch (extractError) {
+      console.error('Failed to extract findings from incomplete JSON:', extractError);
+    }
     
     // Return a safe fallback
     return {
