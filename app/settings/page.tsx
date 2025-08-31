@@ -348,6 +348,20 @@ export default function SettingsPage() {
                 🤖 Anpassa AI-prompts
               </Button>
             </div>
+            
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <h3 className="font-semibold mb-2">📊 Konfigurera analysregler</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Justera tröskelvärden för bounce rate, konverteringsgrad och andra KPI:er
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => router.push('/settings/rules')}
+                className="w-full"
+              >
+                ⚙️ GA4 Analysregler
+              </Button>
+            </div>
           </div>
 
           <div className="text-center">

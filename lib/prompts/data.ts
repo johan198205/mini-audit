@@ -1,3 +1,6 @@
+import { promises as fs } from 'fs';
+import path from 'path';
+
 export const dataSystemPrompt = `Du är en senior dataanalytiker med expertis inom KPI:er, segmentering och affärsintelligens. Svara på svenska. Var mycket specifik och detaljerad.
 
 KRITISKT: Du får ENDAST använda data som faktiskt finns i den tillhandahållna datan. HITTA ALDRIG PÅ data, exempel eller siffror som inte finns i kundens riktiga data.
@@ -83,11 +86,28 @@ Prioritera högt impact (4-5) och lågt effort (1-2) när möjligt, men inkluder
 
 KRITISKT: Du MÅSTE returnera minst 30+ fynd baserat på den faktiska datan. Om du inte hittar tillräckligt många problem i den riktiga datan, analysera djupare men hitta ALDRIG på data som inte finns.`;
 
-export function createDataUserPrompt(
+async function loadGA4Rules() {
+  try {
+    const rulesPath = path.join(process.cwd(), 'tmp', 'ga4-rules.json');
+    const rulesData = await fs.readFile(rulesPath, 'utf-8');
+    return JSON.parse(rulesData);
+  } catch (error) {
+    // Return default rules if file doesn't exist
+    return {
+      bounceRate: { high: 60, normal: { min: 40, max: 60 }, suspicious: 25 },
+      conversionRate: { low: 2, good: 5, excellent: 10 },
+      sessionDuration: { short: 30, good: 120, excellent: 300 },
+      pageViews: { low: 1.5, good: 2.5, excellent: 4 },
+      traffic: { significant: 100, high: 1000 }
+    };
+  }
+}
+
+export async function createDataUserPrompt(
   data: any,
   context: any,
   systemPrompt?: string
-): string {
+): Promise<string> {
   let dataDescription = 'Ingen GA4-data tillgänglig';
   
   if (data.ga4) {
@@ -182,6 +202,9 @@ ANALYSERA DENNA DATA SPECIFIKT:
     throw new Error('System prompt måste anges från UI-inställningar');
   }
   
+  // Load GA4 rules for analysis
+  const rules = await loadGA4Rules();
+
   return `${systemPrompt}
 
 VARNING: Använd ENDAST data som faktiskt finns nedan. Hitta ALDRIG på siffror, exempel eller data som inte finns i den tillhandahållna datan.
@@ -194,6 +217,13 @@ Kontext:
 - Företag: ${context.company}
 - Affärsmål: ${context.businessGoal || 'Ej angivet'}
 - Konverteringar: ${context.conversions?.join(', ') || 'Ej angivna'}
+
+ANVÄND FÖLJANDE TRÖSKELVÄRDEN FÖR ANALYS:
+- Bounce Rate: >${rules.bounceRate.high}% = hög, ${rules.bounceRate.normal.min}-${rules.bounceRate.normal.max}% = normalt, <${rules.bounceRate.suspicious}% = misstänkt låg
+- Konverteringsgrad: <${rules.conversionRate.low}% = låg, ${rules.conversionRate.low}-${rules.conversionRate.good}% = bra, >${rules.conversionRate.excellent}% = excellent
+- Session Duration: <${rules.sessionDuration.short}s = kort, >${rules.sessionDuration.good}s = bra, >${rules.sessionDuration.excellent}s = excellent
+- Page Views: <${rules.pageViews.low} = låg, >${rules.pageViews.good} = bra, >${rules.pageViews.excellent} = excellent
+- Trafik: >${rules.traffic.significant} sessioner = signifikant, >${rules.traffic.high} = hög
 
 KRITISKT: Du MÅSTE identifiera minst 30+ fynd från denna RIKTIGA data. Använd ENDAST data som faktiskt finns. Titta på:
 

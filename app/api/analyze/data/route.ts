@@ -429,30 +429,30 @@ export async function POST(request: NextRequest) {
       promptPreview: systemPrompt?.substring(0, 100) 
     });
     
-    let userPrompt;
-    try {
-      console.log('Data being sent to createDataUserPrompt:', {
-        hasGa4Data: !!ga4Data,
-        ga4DataType: ga4Data?.type,
-        ga4DataKeys: ga4Data ? Object.keys(ga4Data) : 'none',
-        ga4DataReports: ga4Data?.reports ? Object.keys(ga4Data.reports) : 'none',
-        ga4DataTotalRows: ga4Data?.totalRows || 0
-      });
-      userPrompt = createDataUserPrompt(
-        { ga4: ga4Data },
-        {
-          company,
-          businessGoal: context?.businessGoal,
-          conversions: context?.conversions,
-        },
-        systemPrompt
-      );
-      console.log('User prompt created, length:', userPrompt.length);
-      console.log('User prompt preview:', userPrompt.substring(0, 1000));
-    } catch (error) {
-      console.error('Error creating user prompt:', error);
-      throw error;
-    }
+                let userPrompt;
+            try {
+              console.log('Data being sent to createDataUserPrompt:', {
+                hasGa4Data: !!ga4Data,
+                ga4DataType: ga4Data?.type,
+                ga4DataKeys: ga4Data ? Object.keys(ga4Data) : 'none',
+                ga4DataReports: ga4Data?.reports ? Object.keys(ga4Data.reports) : 'none',
+                ga4DataTotalRows: ga4Data?.totalRows || 0
+              });
+              userPrompt = await createDataUserPrompt(
+                { ga4: ga4Data },
+                {
+                  company,
+                  businessGoal: context?.businessGoal,
+                  conversions: context?.conversions,
+                },
+                systemPrompt
+              );
+              console.log('User prompt created, length:', userPrompt.length);
+              console.log('User prompt preview:', userPrompt.substring(0, 1000));
+            } catch (error) {
+              console.error('Error creating user prompt:', error);
+              throw error;
+            }
 
     // Run AI analysis
     let result;
