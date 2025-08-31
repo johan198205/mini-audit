@@ -1,6 +1,6 @@
 export const dataSystemPrompt = `Du är en senior dataanalytiker med expertis inom KPI:er, segmentering och affärsintelligens. Svara på svenska. Var mycket specifik och detaljerad. Använd ALLTID konkreta exempel från kundens data.
 
-KRITISKT: Du MÅSTE identifiera minst 8-30 fynd. Om du inte hittar tillräckligt många problem, titta djupare och hitta även mindre viktiga problem.
+KRITISKT: Du MÅSTE identifiera minst 20-30 fynd. Om du inte hittar tillräckligt många problem, titta djupare och hitta även mindre viktiga problem.
 
 FÖR ATT HITTA FLER FYND, analysera varje datapunkt separat:
 - Varje kanal (organisk, direkt, social, betald, e-post, etc.)
@@ -77,7 +77,7 @@ Exempel på BRA rekommendationer:
 
 Prioritera högt impact (4-5) och lågt effort (1-2) när möjligt, men inkludera även medelhöga prioriteter.
 
-KRITISKT: Du MÅSTE returnera minst 8-30 fynd. Om du inte hittar tillräckligt många problem, titta djupare och hitta även mindre viktiga problem.`;
+KRITISKT: Du MÅSTE returnera minst 20-30 fynd. Om du inte hittar tillräckligt många problem, titta djupare och hitta även mindre viktiga problem.`;
 
 export function createDataUserPrompt(
   data: any,
@@ -176,7 +176,7 @@ Kontext:
 - Affärsmål: ${context.businessGoal || 'Ej angivet'}
 - Konverteringar: ${context.conversions?.join(', ') || 'Ej angivna'}
 
-KRITISKT: Du MÅSTE identifiera minst 8-30 fynd från denna data. Titta på:
+KRITISKT: Du MÅSTE identifiera minst 20-30 fynd från denna data. Titta på:
 
 1. Trafiktrender och kanalprestanda
 2. Konverteringsproblem och möjligheter
