@@ -421,7 +421,9 @@ export async function POST(request: NextRequest) {
       console.log('Data being sent to createDataUserPrompt:', {
         hasGa4Data: !!ga4Data,
         ga4DataType: ga4Data?.type,
-        ga4DataKeys: ga4Data ? Object.keys(ga4Data) : 'none'
+        ga4DataKeys: ga4Data ? Object.keys(ga4Data) : 'none',
+        ga4DataReports: ga4Data?.reports ? Object.keys(ga4Data.reports) : 'none',
+        ga4DataTotalRows: ga4Data?.totalRows || 0
       });
       userPrompt = createDataUserPrompt(
         { ga4: ga4Data },
@@ -431,6 +433,8 @@ export async function POST(request: NextRequest) {
           conversions: context?.conversions,
         }
       );
+      console.log('User prompt created, length:', userPrompt.length);
+      console.log('User prompt preview:', userPrompt.substring(0, 1000));
     } catch (error) {
       console.error('Error creating user prompt:', error);
       throw error;
@@ -439,7 +443,13 @@ export async function POST(request: NextRequest) {
     // Run AI analysis
     let result;
     try {
+      console.log('Running AI analysis with system prompt length:', systemPrompt.length);
       result = await runPrompt(systemPrompt, userPrompt);
+      console.log('AI analysis completed:', {
+        findingsCount: result.findings.length,
+        hasGaps: !!result.gaps,
+        hasSummary: !!result.summary
+      });
     } catch (error) {
       console.error('Error running AI prompt:', error);
       throw error;

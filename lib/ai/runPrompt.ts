@@ -7,6 +7,12 @@ export async function runPrompt(
   temperature: number = 0.2
 ): Promise<AnalysisResult> {
   try {
+    console.log('runPrompt called with:', { 
+      systemPromptLength: systemPrompt.length, 
+      userPromptLength: userPrompt.length,
+      temperature 
+    });
+    
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
@@ -17,12 +23,24 @@ export async function runPrompt(
       response_format: { type: 'json_object' }
     });
 
+    console.log('OpenAI response received:', { choices: response.choices.length });
+
     const content = response.choices[0]?.message?.content;
     if (!content) {
       throw new Error('No response content from OpenAI');
     }
 
-    return safeJson(content);
+    console.log('Response content length:', content.length);
+    console.log('Response content preview:', content.substring(0, 500));
+
+    const result = safeJson(content);
+    console.log('Parsed result:', { 
+      findingsCount: result.findings.length, 
+      hasGaps: !!result.gaps, 
+      hasSummary: !!result.summary 
+    });
+    
+    return result;
   } catch (error) {
     console.error('Error running prompt:', error);
     throw new Error('Failed to get AI analysis');
