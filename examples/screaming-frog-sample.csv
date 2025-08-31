@@ -1,0 +1,8 @@
+Address,Title 1,Meta Description 1,H1-1,Canonical Link Element 1,Schema.org Type,Status Code,Images Missing Alt Text
+https://example.com,Example Homepage,This is an example homepage for testing,Welcome to Example,https://example.com/,WebSite,200,2
+https://example.com/about,About Us - Example,Learn more about our company and mission,About Our Company,https://example.com/about,AboutPage,200,1
+https://example.com/products,Products - Example,Discover our amazing products and services,Our Products,https://example.com/products,CollectionPage,200,5
+https://example.com/contact,Contact Us - Example,Get in touch with our team,Contact Information,https://example.com/contact,ContactPage,200,0
+https://example.com/blog,Blog - Example,Read our latest articles and insights,Latest Articles,https://example.com/blog,Blog,200,3
+
+
