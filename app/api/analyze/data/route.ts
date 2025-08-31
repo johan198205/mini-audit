@@ -5,23 +5,202 @@ import { AnalysisRequest } from '@/lib/types';
 import { loadCustomPrompts } from '@/lib/utils/prompts';
 import { google } from 'googleapis';
 
-// GA4 API function - simplified version
+// GA4 API function - full implementation
 async function fetchGA4Data(propertyId: string, dateRange: any, analysisType?: string) {
   try {
-    // For now, return mock data to get the app working
-    // TODO: Implement proper GA4 API integration
+    // Get GA4 settings from environment
+    const credentials = process.env.GA4_CREDENTIALS;
+    if (!credentials) {
+      throw new Error('GA4 API-inställningar saknas. Konfigurera GA4_CREDENTIALS i .env.local.');
+    }
+
+    // Parse credentials
+    let credentialsJson;
+    try {
+      credentialsJson = JSON.parse(Buffer.from(credentials, 'base64').toString());
+    } catch (error) {
+      // If base64 decode fails, try parsing as direct JSON
+      try {
+        credentialsJson = JSON.parse(credentials);
+      } catch (parseError) {
+        throw new Error('GA4 credentials format is invalid. Must be base64 encoded JSON or direct JSON.');
+      }
+    }
+
+    // Initialize Google Analytics Data API
+    const auth = new google.auth.GoogleAuth({
+      credentials: credentialsJson,
+      scopes: ['https://www.googleapis.com/auth/analytics.readonly'],
+    });
+
+    const analyticsData = google.analyticsdata({ version: 'v1beta', auth });
+
+    // Default date range
+    const startDate = dateRange?.startDate || '30daysAgo';
+    const endDate = dateRange?.endDate || 'today';
+
+    let reports;
+    
+    if (analysisType === 'session-analysis') {
+      // Deep session analysis over longer period
+      reports = await Promise.all([
+        // Daily session trends over last year
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate: '365daysAgo', endDate: 'today' }],
+            dimensions: [
+              { name: 'date' },
+              { name: 'sessionDefaultChannelGroup' }
+            ],
+            metrics: [
+              { name: 'sessions' },
+              { name: 'bounceRate' },
+              { name: 'averageSessionDuration' },
+              { name: 'conversions' }
+            ],
+            limit: '10000'
+          }
+        }),
+
+        // Hourly patterns
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'hour' },
+              { name: 'dayOfWeek' }
+            ],
+            metrics: [
+              { name: 'sessions' },
+              { name: 'bounceRate' },
+              { name: 'averageSessionDuration' }
+            ],
+            limit: '1000'
+          }
+        }),
+
+        // Device and browser analysis
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'deviceCategory' },
+              { name: 'operatingSystem' },
+              { name: 'browser' }
+            ],
+            metrics: [
+              { name: 'sessions' },
+              { name: 'bounceRate' },
+              { name: 'averageSessionDuration' },
+              { name: 'conversions' }
+            ],
+            limit: '1000'
+          }
+        })
+      ]);
+    } else {
+      // Default comprehensive analysis
+      reports = await Promise.all([
+        // Traffic Acquisition
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'sessionDefaultChannelGroup' },
+              { name: 'sessionSource' },
+              { name: 'sessionMedium' }
+            ],
+            metrics: [
+              { name: 'sessions' },
+              { name: 'totalUsers' },
+              { name: 'newUsers' },
+              { name: 'bounceRate' },
+              { name: 'averageSessionDuration' }
+            ],
+            limit: '1000'
+          }
+        }),
+
+        // Page Performance
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'pagePath' },
+              { name: 'pageTitle' }
+            ],
+            metrics: [
+              { name: 'screenPageViews' },
+              { name: 'averageSessionDuration' },
+              { name: 'bounceRate' }
+            ],
+            limit: '1000'
+          }
+        }),
+
+        // Events
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'eventName' }
+            ],
+            metrics: [
+              { name: 'eventCount' },
+              { name: 'totalUsers' }
+            ],
+            limit: '1000'
+          }
+        }),
+
+        // Demographics
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'country' },
+              { name: 'city' },
+              { name: 'deviceCategory' },
+              { name: 'operatingSystem' },
+              { name: 'browser' }
+            ],
+            metrics: [
+              { name: 'sessions' },
+              { name: 'totalUsers' },
+              { name: 'bounceRate' }
+            ],
+            limit: '1000'
+          }
+        })
+      ]);
+    }
+
+    // Combine all data
     return {
       type: 'api',
       propertyId,
-      dateRange: { startDate: dateRange?.startDate || '30daysAgo', endDate: dateRange?.endDate || 'today' },
+      dateRange: { startDate, endDate },
       analysisType: analysisType || 'default',
-      reports: {
-        trafficAcquisition: { rows: [] },
-        pagePerformance: { rows: [] },
-        events: { rows: [] },
-        demographics: { rows: [] }
+      reports: analysisType === 'session-analysis' ? {
+        dailyTrends: reports[0]?.data || { rows: [] },
+        hourlyPatterns: reports[1]?.data || { rows: [] },
+        deviceAnalysis: reports[2]?.data || { rows: [] }
+      } : {
+        trafficAcquisition: reports[0]?.data || { rows: [] },
+        pagePerformance: reports[1]?.data || { rows: [] },
+        events: reports[2]?.data || { rows: [] },
+        demographics: reports[3]?.data || { rows: [] }
       },
-      totalRows: 0
+      totalRows: reports.reduce((sum, report) => {
+        return sum + (report.data.rows?.length || 0);
+      }, 0)
     };
   } catch (error) {
     console.error('GA4 API error:', error);
@@ -54,13 +233,7 @@ export async function POST(request: NextRequest) {
           endDate: 'today'
         }, analysisType);
 
-        ga4Data = {
-          type: 'api',
-          data: apiData,
-          propertyId: apiData.propertyId,
-          dateRange: apiData.dateRange,
-          analysisType: apiData.analysisType
-        };
+        ga4Data = apiData;
         
         console.log('GA4 API data fetched successfully:', {
           propertyId: apiData.propertyId,
@@ -168,6 +341,11 @@ export async function POST(request: NextRequest) {
     
     let userPrompt;
     try {
+      console.log('Data being sent to createDataUserPrompt:', {
+        hasGa4Data: !!ga4Data,
+        ga4DataType: ga4Data?.type,
+        ga4DataKeys: ga4Data ? Object.keys(ga4Data) : 'none'
+      });
       userPrompt = createDataUserPrompt(
         { ga4: ga4Data },
         {

@@ -97,14 +97,14 @@ export function createDataUserPrompt(
 - Totalt antal datapunkter: ${data.ga4.totalRows}
 
 DETALJERAD SESSION DATA:
-${Object.entries(data.ga4.reports).map(([reportName, reportData]: [string, any]) => `
+${data.ga4.reports ? Object.entries(data.ga4.reports).map(([reportName, reportData]: [string, any]) => `
 ${reportName.toUpperCase()}:
-- Antal rader: ${reportData.rows?.length || 0}
-- Dimensioner: ${reportData.dimensionHeaders?.map((h: any) => h.name).join(', ') || 'N/A'}
-- Mätvärden: ${reportData.metricHeaders?.map((h: any) => h.name).join(', ') || 'N/A'}
+- Antal rader: ${reportData?.rows?.length || 0}
+- Dimensioner: ${reportData?.dimensionHeaders?.map((h: any) => h.name).join(', ') || 'N/A'}
+- Mätvärden: ${reportData?.metricHeaders?.map((h: any) => h.name).join(', ') || 'N/A'}
 - Första 10 raderna:
-${JSON.stringify(reportData.rows?.slice(0, 10) || [], null, 2)}
-`).join('\n')}
+${JSON.stringify(reportData?.rows?.slice(0, 10) || [], null, 2)}
+`).join('\n') : 'Ingen rapportdata tillgänglig'}
 
 ANALYSERA DENNA SESSION-DATA SPECIFIKT:
 - Jämför dagliga trender över senaste året för att hitta avvikelser
@@ -120,17 +120,17 @@ ANALYSERA DENNA SESSION-DATA SPECIFIKT:
 - Property ID: ${data.ga4.propertyId}
 - Datumintervall: ${data.ga4.dateRange.startDate} till ${data.ga4.dateRange.endDate}
 - Totalt antal datapunkter: ${data.ga4.totalRows}
-- Tillgängliga rapporter: ${Object.keys(data.ga4.reports).join(', ')}
+- Tillgängliga rapporter: ${data.ga4.reports ? Object.keys(data.ga4.reports).join(', ') : 'Inga rapporter'}
 
 DETALJERAD DATA PER RAPPORT:
-${Object.entries(data.ga4.reports).map(([reportName, reportData]: [string, any]) => `
+${data.ga4.reports ? Object.entries(data.ga4.reports).map(([reportName, reportData]: [string, any]) => `
 ${reportName.toUpperCase()}:
-- Antal rader: ${reportData.rows?.length || 0}
-- Dimensioner: ${reportData.dimensionHeaders?.map((h: any) => h.name).join(', ') || 'N/A'}
-- Mätvärden: ${reportData.metricHeaders?.map((h: any) => h.name).join(', ') || 'N/A'}
+- Antal rader: ${reportData?.rows?.length || 0}
+- Dimensioner: ${reportData?.dimensionHeaders?.map((h: any) => h.name).join(', ') || 'N/A'}
+- Mätvärden: ${reportData?.metricHeaders?.map((h: any) => h.name).join(', ') || 'N/A'}
 - Första 5 raderna:
-${JSON.stringify(reportData.rows?.slice(0, 5) || [], null, 2)}
-`).join('\n')}
+${JSON.stringify(reportData?.rows?.slice(0, 5) || [], null, 2)}
+`).join('\n') : 'Ingen rapportdata tillgänglig'}
 
 ANALYSERA DENNA API-DATA SPECIFIKT:
 - Jämför prestanda mellan olika kanaler och källor

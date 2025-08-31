@@ -66,24 +66,169 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // For now, return mock data to get the app working
-    // TODO: Implement proper GA4 API integration
+    // Analysis type specific queries
+    let reports;
+    
+    if (analysisType === 'session-analysis') {
+      // Deep session analysis over longer period
+      reports = await Promise.all([
+        // Daily session trends over last year
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate: '365daysAgo', endDate: 'today' }],
+            dimensions: [
+              { name: 'date' },
+              { name: 'sessionDefaultChannelGroup' }
+            ],
+            metrics: [
+              { name: 'sessions' },
+              { name: 'bounceRate' },
+              { name: 'averageSessionDuration' },
+              { name: 'conversions' }
+            ],
+            limit: '10000'
+          }
+        }),
+
+        // Hourly patterns
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'hour' },
+              { name: 'dayOfWeek' }
+            ],
+            metrics: [
+              { name: 'sessions' },
+              { name: 'bounceRate' },
+              { name: 'averageSessionDuration' }
+            ],
+            limit: '1000'
+          }
+        }),
+
+        // Device and browser analysis
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'deviceCategory' },
+              { name: 'operatingSystem' },
+              { name: 'browser' }
+            ],
+            metrics: [
+              { name: 'sessions' },
+              { name: 'bounceRate' },
+              { name: 'averageSessionDuration' },
+              { name: 'conversions' }
+            ],
+            limit: '1000'
+          }
+        })
+      ]);
+    } else {
+      // Default comprehensive analysis
+      reports = await Promise.all([
+        // Traffic Acquisition
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'sessionDefaultChannelGroup' },
+              { name: 'sessionSource' },
+              { name: 'sessionMedium' }
+            ],
+            metrics: [
+              { name: 'sessions' },
+              { name: 'totalUsers' },
+              { name: 'newUsers' },
+              { name: 'bounceRate' },
+              { name: 'averageSessionDuration' }
+            ],
+            limit: '1000'
+          }
+        }),
+
+        // Page Performance
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'pagePath' },
+              { name: 'pageTitle' }
+            ],
+            metrics: [
+              { name: 'screenPageViews' },
+              { name: 'averageSessionDuration' },
+              { name: 'bounceRate' }
+            ],
+            limit: '1000'
+          }
+        }),
+
+        // Events
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'eventName' }
+            ],
+            metrics: [
+              { name: 'eventCount' },
+              { name: 'totalUsers' }
+            ],
+            limit: '1000'
+          }
+        }),
+
+        // Demographics
+        analyticsData.properties.runReport({
+          property: `properties/${propertyId}`,
+          requestBody: {
+            dateRanges: [{ startDate, endDate }],
+            dimensions: [
+              { name: 'country' },
+              { name: 'city' },
+              { name: 'deviceCategory' },
+              { name: 'operatingSystem' },
+              { name: 'browser' }
+            ],
+            metrics: [
+              { name: 'sessions' },
+              { name: 'totalUsers' },
+              { name: 'bounceRate' }
+            ],
+            limit: '1000'
+          }
+        })
+      ]);
+    }
+
+    // Combine all data
     const combinedData = {
       type: 'api',
       propertyId,
       dateRange: { startDate, endDate },
       analysisType: analysisType || 'default',
       reports: analysisType === 'session-analysis' ? {
-        dailyTrends: { rows: [] },
-        hourlyPatterns: { rows: [] },
-        deviceAnalysis: { rows: [] }
+        dailyTrends: reports[0]?.data || { rows: [] },
+        hourlyPatterns: reports[1]?.data || { rows: [] },
+        deviceAnalysis: reports[2]?.data || { rows: [] }
       } : {
-        trafficAcquisition: { rows: [] },
-        pagePerformance: { rows: [] },
-        events: { rows: [] },
-        demographics: { rows: [] }
+        trafficAcquisition: reports[0]?.data || { rows: [] },
+        pagePerformance: reports[1]?.data || { rows: [] },
+        events: reports[2]?.data || { rows: [] },
+        demographics: reports[3]?.data || { rows: [] }
       },
-      totalRows: 0
+      totalRows: reports.reduce((sum, report) => {
+        return sum + (report.data.rows?.length || 0);
+      }, 0)
     };
 
     return NextResponse.json(combinedData);
