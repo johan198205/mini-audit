@@ -299,12 +299,15 @@ export async function POST(request: NextRequest) {
 
     // Check if GA4 API should be used
     if (useGa4Api) {
+      console.log('useGa4Api is true, attempting to fetch GA4 data...');
       try {
         const propertyId = process.env.GA4_PROPERTY_ID;
+        console.log('Property ID from env:', propertyId ? 'Found' : 'Not found');
         if (!propertyId) {
           throw new Error('GA4 Property ID not configured');
         }
 
+        console.log('Calling fetchGA4Data with:', { propertyId, analysisType });
         const apiData = await fetchGA4Data(propertyId, {
           startDate: analysisType === 'session-analysis' ? '365daysAgo' : '30daysAgo',
           endDate: 'today'
@@ -320,9 +323,14 @@ export async function POST(request: NextRequest) {
         });
       } catch (error) {
         console.error('Error fetching GA4 API data:', error);
+        console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
         // Continue without GA4 data
       }
-    } else if (files?.ga4) {
+    } else {
+      console.log('useGa4Api is false, skipping GA4 API fetch');
+    }
+    
+    if (files?.ga4) {
       try {
         const fs = await import('fs/promises');
         const path = await import('path');
