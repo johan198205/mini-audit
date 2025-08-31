@@ -120,25 +120,25 @@ async function fetchGA4Data(propertyId: string, dateRange: any, analysisType?: s
           }
         }),
 
-        // User segmentation
-        analyticsData.properties.runReport({
-          property: `properties/${propertyId}`,
-          requestBody: {
-            dateRanges: [{ startDate, endDate }],
-            dimensions: [
-              { name: 'sessionDefaultChannelGroup' },
-              { name: 'userType' }
-            ],
-            metrics: [
-              { name: 'sessions' },
-              { name: 'totalUsers' },
-              { name: 'newUsers' },
-              { name: 'bounceRate' },
-              { name: 'conversions' }
-            ],
-            limit: '1000'
-          }
-        }),
+                        // User segmentation
+                analyticsData.properties.runReport({
+                  property: `properties/${propertyId}`,
+                  requestBody: {
+                    dateRanges: [{ startDate, endDate }],
+                    dimensions: [
+                      { name: 'sessionDefaultChannelGroup' },
+                      { name: 'newVsReturning' }
+                    ],
+                    metrics: [
+                      { name: 'sessions' },
+                      { name: 'totalUsers' },
+                      { name: 'newUsers' },
+                      { name: 'bounceRate' },
+                      { name: 'conversions' }
+                    ],
+                    limit: '1000'
+                  }
+                }),
 
         // Page performance
         analyticsData.properties.runReport({
