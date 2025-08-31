@@ -24,13 +24,35 @@ export default function AnalyzePage() {
     companyInfo, 
     uploadedFiles, 
     contextAnswers, 
+    promptOverrides,
     setAnalysisResult, 
-    setCurrentStep 
+    setCurrentStep
   } = useWizardStore();
 
   const [analysisStates, setAnalysisStates] = useState<Record<string, AnalysisState>>({});
   const [overallProgress, setOverallProgress] = useState(0);
   const [sessionAnalysisRunning, setSessionAnalysisRunning] = useState(false);
+
+  // Load saved prompts into wizard store on component mount
+  useEffect(() => {
+    const loadPrompts = async () => {
+      try {
+        const response = await fetch('/api/prompts/load');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.prompts) {
+            // Use the wizard store's setPromptOverrides function
+            const { setPromptOverrides } = useWizardStore.getState();
+            setPromptOverrides(data.prompts);
+            console.log('Loaded prompts from settings:', data.prompts);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading prompts:', error);
+      }
+    };
+    loadPrompts();
+  }, []);
 
   useEffect(() => {
     if (companyInfo?.sections) {
@@ -76,6 +98,7 @@ export default function AnalyzePage() {
               competitors: contextAnswers.competitors,
               markets: contextAnswers.markets,
             },
+            promptOverrides: promptOverrides,
           }),
         });
 

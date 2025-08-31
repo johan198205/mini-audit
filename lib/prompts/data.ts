@@ -85,7 +85,8 @@ KRITISKT: Du MÅSTE returnera minst 30+ fynd baserat på den faktiska datan. Om 
 
 export function createDataUserPrompt(
   data: any,
-  context: any
+  context: any,
+  systemPrompt?: string
 ): string {
   let dataDescription = 'Ingen GA4-data tillgänglig';
   
@@ -171,7 +172,15 @@ ANALYSERA DENNA DATA SPECIFIKT:
     }
   }
 
-  const systemPrompt = dataSystemPrompt;
+  // Use provided system prompt or throw error if not provided
+  if (!systemPrompt) {
+    console.error('createDataUserPrompt called without systemPrompt:', { 
+      hasSystemPrompt: !!systemPrompt,
+      systemPromptType: typeof systemPrompt,
+      systemPromptValue: systemPrompt
+    });
+    throw new Error('System prompt måste anges från UI-inställningar');
+  }
   
   return `${systemPrompt}
 
@@ -203,5 +212,23 @@ KRITISKT: Du MÅSTE identifiera minst 30+ fynd från denna RIKTIGA data. Använd
 
 Var EXTREMT specifik med exakta siffror, procent och trender från kundens RIKTIGA data. Använd ENDAST konkreta exempel från den faktiska datan och ge detaljerade rekommendationer baserat på riktig data.
 
-Fokusera på insikter som kan öka konverteringar och försäljning.`;
+Fokusera på insikter som kan öka konverteringar och försäljning.
+
+VIKTIGT: Returnera resultatet som JSON med följande format:
+
+{
+  "findings": [
+    {
+      "title": "Problemets titel",
+      "why_it_matters": "Varför det är viktigt",
+      "evidence": "Bevis från data",
+      "recommendation": "Rekommendation",
+      "impact": 1-5,
+      "effort": 1-5,
+      "area": "Data"
+    }
+  ],
+  "gaps": ["Saknade KPI:er"],
+  "summary": "Sammanfattning"
+}`;
 }

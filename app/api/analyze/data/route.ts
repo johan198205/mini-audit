@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runPrompt } from '@/lib/ai/runPrompt';
-import { dataSystemPrompt, createDataUserPrompt } from '@/lib/prompts/data';
+import { createDataUserPrompt } from '@/lib/prompts/data';
 import { AnalysisRequest } from '@/lib/types';
-import { loadCustomPrompts } from '@/lib/utils/prompts';
+
 import { google } from 'googleapis';
 
 // GA4 API function - full implementation
@@ -413,16 +413,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Load custom prompts if available
-    let customPrompts: any = {};
-    try {
-      customPrompts = await loadCustomPrompts();
-    } catch (error) {
-      console.error('Error loading custom prompts:', error);
-    }
+    // Custom prompts loading removed - UI settings are the only source of truth
     
-    // Create prompts - use custom prompt if available, otherwise use override or default
-    const systemPrompt = promptOverrides?.data || customPrompts?.data || dataSystemPrompt;
+    // Create prompts - UI settings are the only source of truth
+    if (!promptOverrides?.data) {
+      console.error('Missing promptOverrides.data:', { promptOverrides });
+      return NextResponse.json(
+        { error: 'GA4-analys kräver prompt från UI-inställningar. Ingen fallback tillåten.' },
+        { status: 400 }
+      );
+    }
+    const systemPrompt = promptOverrides.data;
+    console.log('Using system prompt from UI:', { 
+      promptLength: systemPrompt?.length, 
+      promptPreview: systemPrompt?.substring(0, 100) 
+    });
     
     let userPrompt;
     try {
@@ -439,7 +444,8 @@ export async function POST(request: NextRequest) {
           company,
           businessGoal: context?.businessGoal,
           conversions: context?.conversions,
-        }
+        },
+        systemPrompt
       );
       console.log('User prompt created, length:', userPrompt.length);
       console.log('User prompt preview:', userPrompt.substring(0, 1000));
@@ -475,6 +481,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Data analysis error:', error);
     console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
+    console.error('Error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
     return NextResponse.json(
       { error: 'Failed to perform data analysis: ' + (error instanceof Error ? error.message : 'Unknown error') },
       { status: 500 }
