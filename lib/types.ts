@@ -29,10 +29,26 @@ export type CompanyInfo = {
 export type UploadedFiles = {
   screamingFrog?: string;
   ahrefs?: string;
-  ga4?: string;
+  ga4?: string | string[];
   gtm?: string;
   screenshots?: string[];
   pageSpeed?: any;
+  useGa4Api?: boolean;
+};
+
+export type GA4ApiSettings = {
+  propertyId: string;
+  credentials: string; // Service Account JSON
+};
+
+export type GA4ApiData = {
+  type: 'api';
+  propertyId: string;
+  data: any[];
+  dateRange: {
+    startDate: string;
+    endDate: string;
+  };
 };
 
 export type ContextAnswers = {

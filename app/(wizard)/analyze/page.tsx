@@ -66,6 +66,7 @@ export default function AnalyzePage() {
           body: JSON.stringify({
             company: companyInfo.name,
             files: uploadedFiles,
+            useGa4Api: uploadedFiles.useGa4Api,
             context: {
               url: companyInfo.domain,
               businessGoal: contextAnswers.businessGoal,

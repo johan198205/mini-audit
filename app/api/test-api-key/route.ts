@@ -3,19 +3,29 @@ import OpenAI from 'openai';
 
 export async function POST(request: NextRequest) {
   try {
-    const { apiKey } = await request.json();
+    const { apiKey, testSaved } = await request.json();
 
-    if (!apiKey || typeof apiKey !== 'string') {
+    let keyToTest = apiKey;
+
+    // If testing saved key, get it from environment
+    if (testSaved) {
+      keyToTest = process.env.OPENAI_API_KEY;
+      if (!keyToTest) {
+        return NextResponse.json({ error: 'Ingen API-nyckel sparad' }, { status: 400 });
+      }
+    }
+
+    if (!keyToTest || typeof keyToTest !== 'string') {
       return NextResponse.json({ error: 'API-nyckel krävs' }, { status: 400 });
     }
 
-    if (!apiKey.startsWith('sk-')) {
+    if (!keyToTest.startsWith('sk-') && !keyToTest.startsWith('sk-proj-')) {
       return NextResponse.json({ error: 'Ogiltig API-nyckel format' }, { status: 400 });
     }
 
     // Test the API key by making a simple request
     const openai = new OpenAI({
-      apiKey: apiKey,
+      apiKey: keyToTest,
     });
 
     try {

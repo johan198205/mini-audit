@@ -16,7 +16,43 @@ export async function POST(request: NextRequest) {
     // Parse GA4 data if available
     let ga4Data = null;
 
-    if (files?.ga4) {
+    // Check if GA4 API should be used
+    if (body.useGa4Api) {
+      try {
+        const ga4ApiResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001'}/api/ga4-data`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            propertyId: process.env.GA4_PROPERTY_ID,
+            dateRange: {
+              startDate: '30daysAgo',
+              endDate: 'today'
+            }
+          }),
+        });
+
+        if (ga4ApiResponse.ok) {
+          const apiData = await ga4ApiResponse.json();
+          ga4Data = {
+            type: 'api',
+            data: apiData,
+            propertyId: apiData.propertyId,
+            dateRange: apiData.dateRange
+          };
+          console.log('GA4 API data fetched successfully:', {
+            propertyId: apiData.propertyId,
+            totalRows: apiData.totalRows,
+            reports: Object.keys(apiData.reports)
+          });
+        } else {
+          console.error('GA4 API error:', await ga4ApiResponse.text());
+        }
+      } catch (error) {
+        console.error('Error fetching GA4 API data:', error);
+      }
+    } else if (files?.ga4) {
       try {
         const fs = await import('fs/promises');
         const path = await import('path');

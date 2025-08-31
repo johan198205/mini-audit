@@ -1,6 +1,16 @@
 export const dataSystemPrompt = `Du är en senior dataanalytiker med expertis inom KPI:er, segmentering och affärsintelligens. Svara på svenska. Var mycket specifik och detaljerad. Använd ALLTID konkreta exempel från kundens data.
 
-KRITISKT: Du MÅSTE identifiera minst 8-12 fynd. Om du inte hittar tillräckligt många problem, titta djupare och hitta även mindre viktiga problem.
+KRITISKT: Du MÅSTE identifiera minst 8-30 fynd. Om du inte hittar tillräckligt många problem, titta djupare och hitta även mindre viktiga problem.
+
+FÖR ATT HITTA FLER FYND, analysera varje datapunkt separat:
+- Varje kanal (organisk, direkt, social, betald, e-post, etc.)
+- Varje geografisk region/land
+- Varje enhetstyp (mobil, desktop, tablet)
+- Varje tidsperiod (veckor, månader, säsonger)
+- Varje målgrupp/segment
+- Varje sida/landningssida
+- Varje konverteringshändelse
+- Varje teknisk aspekt (browser, OS, etc.)
 
 VIKTIGT: 
 - Var EXTREMT specifik med exakta siffror, procent och trender från kundens GA4-data
@@ -67,7 +77,7 @@ Exempel på BRA rekommendationer:
 
 Prioritera högt impact (4-5) och lågt effort (1-2) när möjligt, men inkludera även medelhöga prioriteter.
 
-KRITISKT: Du MÅSTE returnera minst 8-12 fynd. Om du inte hittar tillräckligt många problem, titta djupare och hitta även mindre viktiga problem.`;
+KRITISKT: Du MÅSTE returnera minst 8-30 fynd. Om du inte hittar tillräckligt många problem, titta djupare och hitta även mindre viktiga problem.`;
 
 export function createDataUserPrompt(
   data: any,
@@ -76,7 +86,31 @@ export function createDataUserPrompt(
   let dataDescription = 'Ingen GA4-data tillgänglig';
   
   if (data.ga4) {
-    if (data.ga4.type === 'csv' || data.ga4.type === 'multi_csv') {
+    if (data.ga4.type === 'api') {
+      dataDescription = `GA4 API Data (Direkt från Google Analytics):
+- Property ID: ${data.ga4.propertyId}
+- Datumintervall: ${data.ga4.dateRange.startDate} till ${data.ga4.dateRange.endDate}
+- Totalt antal datapunkter: ${data.ga4.data.totalRows}
+- Tillgängliga rapporter: ${Object.keys(data.ga4.data.reports).join(', ')}
+
+DETALJERAD DATA PER RAPPORT:
+${Object.entries(data.ga4.data.reports).map(([reportName, reportData]: [string, any]) => `
+${reportName.toUpperCase()}:
+- Antal rader: ${reportData.rows?.length || 0}
+- Dimensioner: ${reportData.dimensionHeaders?.map((h: any) => h.name).join(', ') || 'N/A'}
+- Mätvärden: ${reportData.metricHeaders?.map((h: any) => h.name).join(', ') || 'N/A'}
+- Första 5 raderna:
+${JSON.stringify(reportData.rows?.slice(0, 5) || [], null, 2)}
+`).join('\n')}
+
+ANALYSERA DENNA API-DATA SPECIFIKT:
+- Jämför prestanda mellan olika kanaler och källor
+- Analysera sidprestanda och användarflöden
+- Identifiera toppevents och konverteringsmönster
+- Undersök demografiska trender och geografisk fördelning
+- Hitta möjligheter för förbättring baserat på faktisk data
+- Identifiera datakvalitetsproblem eller saknade mätvärden`;
+    } else if (data.ga4.type === 'csv' || data.ga4.type === 'multi_csv') {
       const fileInfo = data.ga4.type === 'multi_csv' 
         ? `- Antal filer: ${data.ga4.fileCount}
 - Filnamn: ${data.ga4.files.join(', ')}`
@@ -112,7 +146,7 @@ Kontext:
 - Affärsmål: ${context.businessGoal || 'Ej angivet'}
 - Konverteringar: ${context.conversions?.join(', ') || 'Ej angivna'}
 
-KRITISKT: Du MÅSTE identifiera minst 8-12 fynd från denna data. Titta på:
+KRITISKT: Du MÅSTE identifiera minst 8-30 fynd från denna data. Titta på:
 
 1. Trafiktrender och kanalprestanda
 2. Konverteringsproblem och möjligheter

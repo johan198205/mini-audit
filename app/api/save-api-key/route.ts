@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'API-nyckel krävs' }, { status: 400 });
     }
 
-    if (!apiKey.startsWith('sk-')) {
+    if (!apiKey.startsWith('sk-') && !apiKey.startsWith('sk-proj-')) {
       return NextResponse.json({ error: 'Ogiltig API-nyckel format' }, { status: 400 });
     }
 

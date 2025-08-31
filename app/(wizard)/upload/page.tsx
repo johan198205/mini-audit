@@ -9,6 +9,7 @@ import { TestFileDrop } from '@/components/TestFileDrop';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+// import { Checkbox } from '@/components/ui/checkbox';
 
 export default function UploadPage() {
   const router = useRouter();
@@ -28,6 +29,8 @@ export default function UploadPage() {
     screenshots: [],
   });
 
+  const [useGa4Api, setUseGa4Api] = useState(false);
+
   const handleFilesAccepted = (type: keyof typeof files) => (acceptedFiles: File[]) => {
     console.log(`Upload: Files accepted for ${type}:`, acceptedFiles.length, acceptedFiles.map(f => f.name));
     setFiles(prev => ({
@@ -46,6 +49,11 @@ export default function UploadPage() {
   const handleContinue = async () => {
     // Upload files to server
     const uploadedFilePaths: Record<string, string | string[]> = {};
+    
+    // Add GA4 API flag if enabled
+    if (useGa4Api) {
+      uploadedFilePaths.useGa4Api = true;
+    }
     
     for (const [type, fileList] of Object.entries(files)) {
       if (fileList.length === 0) continue;
@@ -271,19 +279,61 @@ export default function UploadPage() {
           )}
 
           {(companyInfo?.sections.includes('Measurement') || companyInfo?.sections.includes('Data') || companyInfo?.sections.includes('SEO') || companyInfo?.sections.includes('CRO/UX') || companyInfo?.sections.includes('GEO')) && (
-            <div className="space-y-3">
-              <div>
-                <h3 className="font-medium">GA4 Export (flera filer möjliga)</h3>
-                <p className="text-sm text-muted-foreground">
-                  Ladda upp flera GA4-rapporter för komplett analys: Traffic Acquisition, Engagement, Pages, Events, Conversions, Demographics, Technology, Geographic
-                </p>
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <div>
+                  <h3 className="font-medium">GA4 Data</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Välj hur du vill hämta GA4-data för analys
+                  </p>
+                </div>
+                
+                <div className="flex items-center space-x-2 p-3 border rounded-lg bg-blue-50">
+                  <input
+                    type="checkbox"
+                    id="useGa4Api"
+                    checked={useGa4Api}
+                    onChange={(e) => setUseGa4Api(e.target.checked)}
+                    className="h-4 w-4"
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="useGa4Api" className="text-sm font-medium cursor-pointer">
+                      🚀 Använd GA4 API (rekommenderat)
+                    </label>
+                    <p className="text-xs text-muted-foreground">
+                      Hämta data direkt från GA4 API för snabbare och mer omfattande analys. Kräver GA4 API-inställningar.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <TestFileDrop
-                onFilesAccepted={handleFilesAccepted('ga4')}
-                files={files.ga4}
-                title=""
-                maxFiles={10}
-              />
+
+              {useGa4Api ? (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <h4 className="font-semibold text-green-800">GA4 API aktiverat</h4>
+                  </div>
+                  <p className="text-sm text-green-700">
+                    Data kommer att hämtas automatiskt från GA4 API baserat på dina inställningar. 
+                    Kontrollera att GA4 API är konfigurerat i inställningar.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="font-medium">CSV-uppladdning (flera filer möjliga)</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Ladda upp flera GA4-rapporter för komplett analys: Traffic Acquisition, Engagement, Pages, Events, Conversions, Demographics, Technology, Geographic
+                    </p>
+                  </div>
+                  <TestFileDrop
+                    onFilesAccepted={handleFilesAccepted('ga4')}
+                    files={files.ga4}
+                    title=""
+                    maxFiles={10}
+                  />
+                </div>
+              )}
             </div>
           )}
 
