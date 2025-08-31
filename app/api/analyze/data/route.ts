@@ -463,7 +463,14 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json({
+      ...result,
+      analysisPeriod: {
+        startDate: analysisType === 'session-analysis' ? '365daysAgo' : '30daysAgo',
+        endDate: 'today',
+        description: analysisType === 'session-analysis' ? 'Senaste 365 dagarna' : 'Senaste 30 dagarna'
+      }
+    });
 
   } catch (error) {
     console.error('Data analysis error:', error);

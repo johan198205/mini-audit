@@ -13,14 +13,30 @@ import { Search, Filter } from 'lucide-react';
 interface FindingsTableProps {
   findings: Finding[];
   onFindingsChange: (findings: Finding[]) => void;
+  analysisResults?: any;
 }
 
-export function FindingsTable({ findings, onFindingsChange }: FindingsTableProps) {
+export function FindingsTable({ findings, onFindingsChange, analysisResults }: FindingsTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterArea, setFilterArea] = useState<string>('all');
   const [editingFinding, setEditingFinding] = useState<Finding | null>(null);
 
   const areas = Array.from(new Set(findings.map(f => f.area)));
+
+  // Get analysis period from analysisResults
+  const getAnalysisPeriod = () => {
+    if (!analysisResults) return null;
+    
+    // Look for analysisPeriod in any of the analysis results
+    for (const result of Object.values(analysisResults)) {
+      if (result && typeof result === 'object' && 'analysisPeriod' in result) {
+        return (result as any).analysisPeriod;
+      }
+    }
+    return null;
+  };
+
+  const analysisPeriod = getAnalysisPeriod();
 
   const filteredFindings = findings.filter(finding => {
     const matchesSearch = finding.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -47,7 +63,14 @@ export function FindingsTable({ findings, onFindingsChange }: FindingsTableProps
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Analysresultat</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Analysresultat</CardTitle>
+          {analysisPeriod && (
+            <Badge variant="outline" className="text-xs">
+              {analysisPeriod.description}
+            </Badge>
+          )}
+        </div>
         <div className="flex gap-4 items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />

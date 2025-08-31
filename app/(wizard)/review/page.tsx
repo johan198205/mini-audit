@@ -124,6 +124,7 @@ export default function ReviewPage() {
         <FindingsTable 
           findings={findings} 
           onFindingsChange={handleFindingsChange}
+          analysisResults={analysisResults}
         />
 
         {/* Navigation */}
